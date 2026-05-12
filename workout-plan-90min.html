@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>90-Min Gym Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --card: #141414;
+    --border: #222;
+    --orange: #f97316;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --red: #ef4444;
+    --text: #e5e5e5;
+    --muted: #888;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--black); color: var(--text); font-family: 'DM Sans', sans-serif; padding-bottom: 60px; }
+
+  header {
+    background: linear-gradient(135deg, #111 0%, #1a0a00 60%, #0a0a0a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 24px 28px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; top: -60px; left: 50%;
+    transform: translateX(-50%);
+    width: 400px; height: 200px;
+    background: radial-gradient(ellipse, rgba(249,115,22,0.15), transparent 70%);
+    pointer-events: none;
+  }
+  .badge {
+    display: inline-block;
+    background: rgba(249,115,22,0.12);
+    border: 1px solid rgba(249,115,22,0.35);
+    color: var(--orange);
+    font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 2px; margin-bottom: 14px;
+  }
+  h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(44px, 9vw, 74px); letter-spacing: 3px; line-height: 1; color: #fff; }
+  h1 span { color: var(--orange); }
+  .subtitle { color: var(--muted); font-size: 13px; margin-top: 8px; }
+
+  .stats-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+  .stat-pill { background: var(--card); border: 1px solid var(--border); border-radius: 40px; padding: 7px 16px; font-size: 12px; color: var(--muted); }
+  .stat-pill strong { color: var(--orange); }
+
+  /* Week grid */
+  .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; max-width: 900px; margin: 22px auto 0; padding: 0 24px; }
+  .week-day { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 4px; text-align: center; }
+  .week-day .wd-name { color: var(--muted); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+  .week-day .wd-focus { font-weight: 600; font-size: 10px; line-height: 1.3; }
+  .wd-gym { border-color: var(--orange); }
+  .wd-gym .wd-focus { color: var(--orange); }
+  .wd-rest .wd-focus { color: #333; }
+
+  /* Tabs */
+  .tabs { display: flex; overflow-x: auto; gap: 0; padding: 22px 24px 0; max-width: 900px; margin: 0 auto; scrollbar-width: none; }
+  .tab { flex: 0 0 auto; padding: 10px 18px; background: transparent; border: 1px solid var(--border); border-bottom: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .tab:first-child { border-radius: 6px 0 0 0; }
+  .tab:last-child  { border-radius: 0 6px 0 0; }
+  .tab.active { background: var(--card); color: var(--orange); border-color: var(--orange); border-bottom: 1px solid var(--card); margin-bottom: -1px; z-index: 1; }
+  .tab:hover:not(.active) { color: var(--text); }
+
+  .panel-wrap { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+  .panel { display: none; background: var(--card); border: 1px solid var(--border); border-radius: 0 6px 6px 6px; padding: 26px; animation: fadeUp 0.3s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  .day-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .day-label { font-family: 'Bebas Neue', sans-serif; font-size: 34px; letter-spacing: 2px; color: #fff; }
+  .focus-tag { padding: 4px 12px; border-radius: 3px; font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; }
+  .push  { background: rgba(239,68,68,0.15);  color: #ef4444;  border: 1px solid rgba(239,68,68,0.3); }
+  .pull  { background: rgba(59,130,246,0.15); color: #60a5fa;  border: 1px solid rgba(59,130,246,0.3); }
+  .legs  { background: rgba(34,197,94,0.15);  color: #4ade80;  border: 1px solid rgba(34,197,94,0.3); }
+  .full  { background: rgba(168,85,247,0.15); color: #c084fc;  border: 1px solid rgba(168,85,247,0.3); }
+
+  /* Timeline bar */
+  .timeline {
+    display: flex;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 22px;
+    height: 36px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .tl-seg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    white-space: nowrap;
+    padding: 0 6px;
+    overflow: hidden;
+  }
+  .tl-warmup  { background: #1e3a2f; color: #4ade80; }
+  .tl-main    { background: #3a1a00; color: #fb923c; }
+  .tl-cardio  { background: #1a1a3a; color: #93c5fd; }
+  .tl-core    { background: #2a1a3a; color: #c084fc; }
+  .tl-cool    { background: #1e1e1e; color: #888; }
+
+  .time-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+  .tl-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .tl-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  .section-block { margin-bottom: 24px; }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .section-label {
+    font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted);
+  }
+  .section-time {
+    font-size: 11px;
+    background: rgba(249,115,22,0.1);
+    color: var(--orange);
+    border: 1px solid rgba(249,115,22,0.25);
+    border-radius: 20px;
+    padding: 2px 10px;
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; padding: 0 10px 8px 0; border-bottom: 1px solid var(--border); }
+  td { padding: 11px 10px 11px 0; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .exercise-name { font-weight: 500; color: #fff; }
+  .exercise-name small { display: block; color: var(--muted); font-size: 12px; font-weight: 300; margin-top: 2px; }
+  .sets { color: var(--orange); font-weight: 600; }
+  .reps { color: var(--muted); }
+  .rest-col { font-size: 12px; color: #555; }
+  .time-col { font-size: 12px; color: #60a5fa; font-weight: 500; }
+
+  .tip-box { background: rgba(249,115,22,0.06); border-left: 3px solid var(--orange); padding: 14px 16px; border-radius: 0 4px 4px 0; font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .tip-box strong { color: var(--orange); display: block; margin-bottom: 4px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .total-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(249,115,22,0.08);
+    border: 1px solid rgba(249,115,22,0.2);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+  }
+  .total-bar .tb-label { font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+  .total-bar .tb-time { font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: var(--orange); letter-spacing: 2px; }
+  .total-bar .tb-note { font-size: 11px; color: #555; }
+
+  /* Nutrition */
+  .nutrition-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .nut-card { background: #0f0f0f; border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .nut-card .nut-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .nut-card .nut-value { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 1px; }
+  .nut-card .nut-note { font-size: 11px; color: #555; margin-top: 4px; }
+
+  @media (max-width: 600px) {
+    .week-grid { gap: 3px; }
+    .week-day { padding: 7px 2px; }
+    .week-day .wd-name, .week-day .wd-focus { font-size: 9px; }
+    .timeline { height: 28px; font-size: 9px; }
+    table { font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Strength + Conditioning</div>
+  <h1>YOUR <span>90-MIN</span><br>GYM PLAN</h1>
+  <p class="subtitle">4 days a week — every minute accounted for</p>
+  <div class="stats-row">
+    <div class="stat-pill">Weight <strong>98 kg</strong></div>
+    <div class="stat-pill">Height <strong>5'7"</strong></div>
+    <div class="stat-pill">Goal <strong>Strength + Fitness</strong></div>
+    <div class="stat-pill">Per Session <strong>90 minutes</strong></div>
+  </div>
+</header>
+
+<div class="week-grid">
+  <div class="week-day wd-gym"><div class="wd-name">Mon</div><div class="wd-focus">Push Day</div></div>
+  <div class="week-day wd-gym"><div class="wd-name">Tue</div><div class="wd-focus">Pull Day</div></div>
+  <div class="week-day wd-rest"><div class="wd-name">Wed</div><div class="wd-focus">Active Rest</div></div>
+  <div class="week-day wd-gym"><div class="wd-name">Thu</div><div class="wd-focus">Legs Day</div></div>
+  <div class="week-day wd-rest"><div class="wd-name">Fri</div><div class="wd-focus">Active Rest</div></div>
+  <div class="week-day wd-gym"><div class="wd-name">Sat</div><div class="wd-focus">Full Body</div></div>
+  <div class="week-day wd-rest"><div class="wd-name">Sun</div><div class="wd-focus">Rest</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('push', this)">Mon — Push</button>
+  <button class="tab" onclick="showTab('pull', this)">Tue — Pull</button>
+  <button class="tab" onclick="showTab('legs', this)">Thu — Legs</button>
+  <button class="tab" onclick="showTab('full', this)">Sat — Full Body</button>
+  <button class="tab" onclick="showTab('nutrition', this)">Nutrition</button>
+</div>
+
+<div class="panel-wrap">
+
+  <!-- ===== PUSH ===== -->
+  <div class="panel active" id="panel-push">
+    <div class="day-header">
+      <div class="day-label">Monday</div>
+      <div class="focus-tag push">Push — Chest / Shoulders / Triceps</div>
+    </div>
+
+    <div class="total-bar">
+      <div><div class="tb-label">Total Session</div><div class="tb-note">All phases included</div></div>
+      <div class="tb-time">90 MIN</div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-seg tl-warmup" style="width:11%">Warm-up</div>
+      <div class="tl-seg tl-main"   style="width:67%">Main Lifts</div>
+      <div class="tl-seg tl-cardio" style="width:14%">Cardio</div>
+      <div class="tl-seg tl-cool"   style="width:8%">Cool</div>
+    </div>
+    <div class="time-legend">
+      <div class="tl-item"><div class="tl-dot" style="background:#1e3a2f"></div>Warm-up 10 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#3a1a00"></div>Main Lifts 60 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#1a1a3a"></div>Cardio 13 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#1e1e1e"></div>Cool-down 7 min</div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Warm-Up</span><span class="section-time">0:00 – 0:10</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Sets</th><th>Reps / Time</th><th>Est. Time</th></tr>
+        <tr><td><div class="exercise-name">Treadmill brisk walk / light jog</div></td><td class="sets">—</td><td class="reps">5 min</td><td class="time-col">5 min</td></tr>
+        <tr><td><div class="exercise-name">Arm circles + band pull-apart</div></td><td class="sets">2</td><td class="reps">15 reps each</td><td class="time-col">3 min</td></tr>
+        <tr><td><div class="exercise-name">Empty bar bench press (activation)</div></td><td class="sets">1</td><td class="reps">15 reps</td><td class="time-col">2 min</td></tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Main Lifts</span><span class="section-time">0:10 – 1:10</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th><th>Est. Time</th></tr>
+        <tr>
+          <td><div class="exercise-name">Barbell Bench Press<small>Primary chest + triceps builder</small></div></td>
+          <td class="sets">4</td><td class="reps">6–8</td><td class="rest-col">2 min</td><td class="time-col">14 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Incline Dumbbell Press<small>Upper chest emphasis</small></div></td>
+          <td class="sets">3</td><td class="reps">10–12</td><td class="rest-col">90 s</td><td class="time-col">10 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Seated Dumbbell Shoulder Press<small>Deltoid mass builder</small></div></td>
+          <td class="sets">3</td><td class="reps">10–12</td><td class="rest-col">90 s</td><td class="time-col">10 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Cable Lateral Raises<small>Side delt width</small></div></td>
+          <td class="sets">3</td><td class="reps">15</td><td class="rest-col">60 s</td><td class="time-col">8 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Dips (weighted or bodyweight)<small>Chest + tricep finisher</small></div></td>
+          <td class="sets">3</td><td class="reps">10–12</td><td class="rest-col">90 s</td><td class="time-col">9 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Cable Tricep Pushdown<small>Isolation burn-out</small></div></td>
+          <td class="sets">3</td><td class="reps">15</td><td class="rest-col">60 s</td><td class="time-col">7 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Chest Cable Fly<small>Stretch + squeeze, high rep</small></div></td>
+          <td class="sets">2</td><td class="reps">15</td><td class="rest-col">45 s</td><td class="time-col">4 min</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Cardio Finisher</span><span class="section-time">1:10 – 1:23</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Format</th><th>Est. Time</th></tr>
+        <tr><td><div class="exercise-name">Rowing Machine<small>Steady moderate pace</small></div></td><td class="reps">13 min continuous</td><td class="time-col">13 min</td></tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Cool-Down & Stretch</span><span class="section-time">1:23 – 1:30</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Duration</th></tr>
+        <tr><td><div class="exercise-name">Chest doorway stretch</div></td><td class="reps">60 s each side</td></tr>
+        <tr><td><div class="exercise-name">Shoulder cross-body stretch</div></td><td class="reps">60 s each side</td></tr>
+        <tr><td><div class="exercise-name">Tricep overhead stretch + deep breathing</div></td><td class="reps">2 min</td></tr>
+      </table>
+    </div>
+
+    <div class="tip-box"><strong>💡 Pacing Tip</strong>Keep rest periods strict with a phone timer. The 2-min rests on bench press are your longest — respect them for strength, but don't go over. That's how 60 min of lifting stays 60 min.</div>
+  </div>
+
+  <!-- ===== PULL ===== -->
+  <div class="panel" id="panel-pull">
+    <div class="day-header">
+      <div class="day-label">Tuesday</div>
+      <div class="focus-tag pull">Pull — Back / Biceps / Rear Delts</div>
+    </div>
+
+    <div class="total-bar">
+      <div><div class="tb-label">Total Session</div><div class="tb-note">All phases included</div></div>
+      <div class="tb-time">90 MIN</div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-seg tl-warmup" style="width:11%">Warm-up</div>
+      <div class="tl-seg tl-main"   style="width:65%">Main Lifts</div>
+      <div class="tl-seg tl-cardio" style="width:16%">Cardio</div>
+      <div class="tl-seg tl-cool"   style="width:8%">Cool</div>
+    </div>
+    <div class="time-legend">
+      <div class="tl-item"><div class="tl-dot" style="background:#1e3a2f"></div>Warm-up 10 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#3a1a00"></div>Main Lifts 58 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#1a1a3a"></div>HIIT Cardio 15 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#1e1e1e"></div>Cool-down 7 min</div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Warm-Up</span><span class="section-time">0:00 – 0:10</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Sets</th><th>Reps / Time</th><th>Est. Time</th></tr>
+        <tr><td><div class="exercise-name">Light resistance band rows</div></td><td class="sets">2</td><td class="reps">15 reps</td><td class="time-col">3 min</td></tr>
+        <tr><td><div class="exercise-name">Cat-cow + thoracic rotations</div></td><td class="sets">1</td><td class="reps">90 s</td><td class="time-col">2 min</td></tr>
+        <tr><td><div class="exercise-name">Dead hang or scapular pull-ups</div></td><td class="sets">2</td><td class="reps">30 s hang / 8 reps</td><td class="time-col">5 min</td></tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Main Lifts</span><span class="section-time">0:10 – 1:08</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th><th>Est. Time</th></tr>
+        <tr>
+          <td><div class="exercise-name">Barbell / Machine Row<small>Mid-back thickness builder</small></div></td>
+          <td class="sets">4</td><td class="reps">6–8</td><td class="rest-col">2 min</td><td class="time-col">14 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Lat Pulldown (Wide Grip)<small>Back width — V-taper</small></div></td>
+          <td class="sets">3</td><td class="reps">10–12</td><td class="rest-col">90 s</td><td class="time-col">10 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Seated Cable Row (Close Grip)<small>Full back engagement</small></div></td>
+          <td class="sets">3</td><td class="reps">12</td><td class="rest-col">90 s</td><td class="time-col">10 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Face Pulls (Cable)<small>Rear delts + rotator cuff health</small></div></td>
+          <td class="sets">3</td><td class="reps">15–20</td><td class="rest-col">60 s</td><td class="time-col">8 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Dumbbell Bicep Curl<small>Supinate at top for peak contraction</small></div></td>
+          <td class="sets">3</td><td class="reps">12</td><td class="rest-col">60 s</td><td class="time-col">8 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Hammer Curl<small>Brachialis + forearm thickness</small></div></td>
+          <td class="sets">3</td><td class="reps">12 each</td><td class="rest-col">60 s</td><td class="time-col">8 min</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">HIIT Cardio Finisher</span><span class="section-time">1:08 – 1:23</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Format</th><th>Est. Time</th></tr>
+        <tr><td><div class="exercise-name">Stationary Bike or Elliptical<small>30 sec MAX effort / 60 sec easy</small></div></td><td class="reps">8 rounds</td><td class="time-col">12 min</td></tr>
+        <tr><td><div class="exercise-name">Easy walk to cool pulse</div></td><td class="reps">—</td><td class="time-col">3 min</td></tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Cool-Down & Stretch</span><span class="section-time">1:23 – 1:30</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Duration</th></tr>
+        <tr><td><div class="exercise-name">Lat stretch (hanging or seated)</div></td><td class="reps">60 s each side</td></tr>
+        <tr><td><div class="exercise-name">Bicep wall stretch</div></td><td class="reps">45 s each side</td></tr>
+        <tr><td><div class="exercise-name">Child's pose + deep breathing</div></td><td class="reps">2 min</td></tr>
+      </table>
+    </div>
+
+    <div class="tip-box"><strong>💡 Pacing Tip</strong>HIIT on pull day is ideal — your legs are fully fresh. Go genuinely hard on those 30-second sprints; that's the difference between cardio that changes your body and cardio that just passes time.</div>
+  </div>
+
+  <!-- ===== LEGS ===== -->
+  <div class="panel" id="panel-legs">
+    <div class="day-header">
+      <div class="day-label">Thursday</div>
+      <div class="focus-tag legs">Legs — Quads / Hamstrings / Glutes / Calves</div>
+    </div>
+
+    <div class="total-bar">
+      <div><div class="tb-label">Total Session</div><div class="tb-note">All phases included</div></div>
+      <div class="tb-time">90 MIN</div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-seg tl-warmup" style="width:13%">Warm-up</div>
+      <div class="tl-seg tl-main"   style="width:62%">Main Lifts</div>
+      <div class="tl-seg tl-core"   style="width:10%">Core</div>
+      <div class="tl-seg tl-cardio" style="width:8%">Cardio</div>
+      <div class="tl-seg tl-cool"   style="width:7%">Cool</div>
+    </div>
+    <div class="time-legend">
+      <div class="tl-item"><div class="tl-dot" style="background:#1e3a2f"></div>Warm-up 12 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#3a1a00"></div>Main Lifts 56 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#2a1a3a"></div>Core 8 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#1a1a3a"></div>Cardio 7 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#1e1e1e"></div>Cool-down 7 min</div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Warm-Up</span><span class="section-time">0:00 – 0:12</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Sets</th><th>Reps / Time</th><th>Est. Time</th></tr>
+        <tr><td><div class="exercise-name">Stationary bike (easy pace)</div></td><td class="sets">—</td><td class="reps">5 min</td><td class="time-col">5 min</td></tr>
+        <tr><td><div class="exercise-name">Bodyweight squats</div></td><td class="sets">2</td><td class="reps">15 reps</td><td class="time-col">3 min</td></tr>
+        <tr><td><div class="exercise-name">Hip circles + leg swings</div></td><td class="sets">1</td><td class="reps">10 each direction</td><td class="time-col">2 min</td></tr>
+        <tr><td><div class="exercise-name">Empty bar squat (activation)</div></td><td class="sets">1</td><td class="reps">10 reps</td><td class="time-col">2 min</td></tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Main Lifts</span><span class="section-time">0:12 – 1:08</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th><th>Est. Time</th></tr>
+        <tr>
+          <td><div class="exercise-name">Barbell Back Squat<small>King of all lifts — full lower body</small></div></td>
+          <td class="sets">4</td><td class="reps">6–8</td><td class="rest-col">2.5 min</td><td class="time-col">16 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Romanian Deadlift (RDL)<small>Hamstrings + glutes stretch & strength</small></div></td>
+          <td class="sets">3</td><td class="reps">10</td><td class="rest-col">2 min</td><td class="time-col">12 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Leg Press<small>Quad overload, less spinal load</small></div></td>
+          <td class="sets">3</td><td class="reps">12–15</td><td class="rest-col">90 s</td><td class="time-col">10 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Walking Lunges (Dumbbells)<small>Balance, coordination, glutes</small></div></td>
+          <td class="sets">3</td><td class="reps">10 each leg</td><td class="rest-col">90 s</td><td class="time-col">10 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Leg Curl Machine<small>Hamstring isolation</small></div></td>
+          <td class="sets">3</td><td class="reps">12–15</td><td class="rest-col">60 s</td><td class="time-col">8 min</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Calves + Core</span><span class="section-time">1:08 – 1:16</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Sets</th><th>Reps / Duration</th><th>Est. Time</th></tr>
+        <tr><td><div class="exercise-name">Standing Calf Raises</div></td><td class="sets">4</td><td class="reps">20 reps</td><td class="time-col">4 min</td></tr>
+        <tr><td><div class="exercise-name">Plank</div></td><td class="sets">3</td><td class="reps">45 sec</td><td class="time-col">3 min</td></tr>
+        <tr><td><div class="exercise-name">Hanging Knee Raises</div></td><td class="sets">2</td><td class="reps">15 reps</td><td class="time-col">3 min</td></tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Cardio Finisher</span><span class="section-time">1:16 – 1:23</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Format</th><th>Est. Time</th></tr>
+        <tr><td><div class="exercise-name">Incline Treadmill Walk<small>Low impact — legs already taxed</small></div></td><td class="reps">Incline 8, moderate pace</td><td class="time-col">7 min</td></tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Cool-Down & Stretch</span><span class="section-time">1:23 – 1:30</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Duration</th></tr>
+        <tr><td><div class="exercise-name">Standing quad stretch</div></td><td class="reps">60 s each side</td></tr>
+        <tr><td><div class="exercise-name">Hamstring floor stretch</div></td><td class="reps">60 s each side</td></tr>
+        <tr><td><div class="exercise-name">Pigeon pose / hip flexor stretch</div></td><td class="reps">90 s each side</td></tr>
+      </table>
+    </div>
+
+    <div class="tip-box"><strong>💡 Legs Day Tip</strong>Legs sessions feel the hardest — that's the point. The squat and RDL together hit nearly every muscle below the waist. Don't reduce weight to rush; increase rest if needed, but keep the form strict.</div>
+  </div>
+
+  <!-- ===== FULL BODY ===== -->
+  <div class="panel" id="panel-full">
+    <div class="day-header">
+      <div class="day-label">Saturday</div>
+      <div class="focus-tag full">Full Body — Compound + Conditioning</div>
+    </div>
+
+    <div class="total-bar">
+      <div><div class="tb-label">Total Session</div><div class="tb-note">Longest session — use weekend time</div></div>
+      <div class="tb-time">90 MIN</div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-seg tl-warmup" style="width:11%">Warm-up</div>
+      <div class="tl-seg tl-main"   style="width:60%">Main Lifts</div>
+      <div class="tl-seg tl-cardio" style="width:20%">Conditioning</div>
+      <div class="tl-seg tl-cool"   style="width:9%">Cool</div>
+    </div>
+    <div class="time-legend">
+      <div class="tl-item"><div class="tl-dot" style="background:#1e3a2f"></div>Warm-up 10 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#3a1a00"></div>Main Lifts 54 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#1a1a3a"></div>Conditioning 18 min</div>
+      <div class="tl-item"><div class="tl-dot" style="background:#1e1e1e"></div>Cool-down 8 min</div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Warm-Up</span><span class="section-time">0:00 – 0:10</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Sets</th><th>Duration / Reps</th><th>Est. Time</th></tr>
+        <tr><td><div class="exercise-name">Jump rope or light jog</div></td><td class="sets">—</td><td class="reps">5 min</td><td class="time-col">5 min</td></tr>
+        <tr><td><div class="exercise-name">World's greatest stretch</div></td><td class="sets">1</td><td class="reps">5 reps each side</td><td class="time-col">3 min</td></tr>
+        <tr><td><div class="exercise-name">Glute bridges + shoulder rolls</div></td><td class="sets">1</td><td class="reps">10 reps each</td><td class="time-col">2 min</td></tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Main Lifts</span><span class="section-time">0:10 – 1:04</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th><th>Est. Time</th></tr>
+        <tr>
+          <td><div class="exercise-name">Conventional Deadlift<small>Total posterior chain — heaviest lift</small></div></td>
+          <td class="sets">4</td><td class="reps">5</td><td class="rest-col">2.5 min</td><td class="time-col">16 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Pull-Ups (or Assisted)<small>Superset with deadlift on alternate sets</small></div></td>
+          <td class="sets">3</td><td class="reps">6–10</td><td class="rest-col">90 s</td><td class="time-col">10 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Dumbbell Clean & Press<small>Full body explosive movement</small></div></td>
+          <td class="sets">3</td><td class="reps">8 each side</td><td class="rest-col">90 s</td><td class="time-col">10 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Goblet Squat<small>Lightweight, high rep — metabolic</small></div></td>
+          <td class="sets">3</td><td class="reps">15</td><td class="rest-col">60 s</td><td class="time-col">8 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Farmer's Carry (Dumbbells)<small>Grip, core, traps, conditioning</small></div></td>
+          <td class="sets">3</td><td class="reps">40 m walk</td><td class="rest-col">60 s</td><td class="time-col">7 min</td>
+        </tr>
+        <tr>
+          <td><div class="exercise-name">Ab Wheel Rollout or Hanging Leg Raise</div></td>
+          <td class="sets">3</td><td class="reps">10–12</td><td class="rest-col">45 s</td><td class="time-col">5 min</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Conditioning Cardio</span><span class="section-time">1:04 – 1:22</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Format</th><th>Est. Time</th></tr>
+        <tr><td><div class="exercise-name">Treadmill Incline Walk<small>Incline 10, pace 5.5–6 km/h</small></div></td><td class="reps">Steady state</td><td class="time-col">18 min</td></tr>
+      </table>
+      <div style="margin-top:10px; font-size:12px; color:var(--muted)">Alternative: Battle ropes 5×30s, or stair climber 15 min if available</div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-header"><span class="section-label">Cool-Down & Stretch</span><span class="section-time">1:22 – 1:30</span></div>
+      <table>
+        <tr><th>Exercise</th><th>Duration</th></tr>
+        <tr><td><div class="exercise-name">Full body foam roll (back, quads, hamstrings)</div></td><td class="reps">4 min</td></tr>
+        <tr><td><div class="exercise-name">Hip flexor + lat overhead stretch</div></td><td class="reps">2 min</td></tr>
+        <tr><td><div class="exercise-name">Deep breathing / controlled exhale</div></td><td class="reps">2 min</td></tr>
+      </table>
+    </div>
+
+    <div class="tip-box"><strong>💡 Saturday Tip</strong>Saturday is your showcase session — you have time and energy. The incline treadmill walk at the end burns fat without destroying your legs for Monday. Aim to leave feeling challenged, not destroyed.</div>
+  </div>
+
+  <!-- NUTRITION -->
+  <div class="panel" id="panel-nutrition">
+    <div class="day-header">
+      <div class="day-label">Nutrition</div>
+      <div class="focus-tag full">Fuel for Strength & Fat Loss</div>
+    </div>
+
+    <p class="section-label" style="margin-bottom:14px">Daily Targets — 98 kg, Body Recomposition</p>
+    <div class="nutrition-grid">
+      <div class="nut-card">
+        <div class="nut-label">Calories</div>
+        <div class="nut-value" style="color:var(--orange)">2,400–2,600</div>
+        <div class="nut-note">Moderate deficit for fat loss</div>
+      </div>
+      <div class="nut-card">
+        <div class="nut-label">Protein</div>
+        <div class="nut-value" style="color:#ef4444">175–200g</div>
+        <div class="nut-note">~2g per kg bodyweight</div>
+      </div>
+      <div class="nut-card">
+        <div class="nut-label">Carbs</div>
+        <div class="nut-value" style="color:#3b82f6">220–260g</div>
+        <div class="nut-note">Prioritise around workouts</div>
+      </div>
+      <div class="nut-card">
+        <div class="nut-label">Fats</div>
+        <div class="nut-value" style="color:#a855f7">65–80g</div>
+        <div class="nut-note">Avocado, nuts, olive oil</div>
+      </div>
+    </div>
+
+    <p class="section-label" style="margin-bottom:12px">Meal Timing — 8–5 Worker</p>
+    <table>
+      <tr><th>Time</th><th>What to Eat</th></tr>
+      <tr><td><div class="exercise-name">7:00 AM — Breakfast</div></td><td class="reps">Oats + 3 eggs + banana</td></tr>
+      <tr><td><div class="exercise-name">Pre-Workout (30–60 min before gym)</div></td><td class="reps">Protein shake or Greek yoghurt + fruit</td></tr>
+      <tr><td><div class="exercise-name">Post-Workout (within 60 min)</div></td><td class="reps">Protein shake + rice + chicken / fish</td></tr>
+      <tr><td><div class="exercise-name">Lunch (office)</div></td><td class="reps">Lean protein + vegetables + complex carb</td></tr>
+      <tr><td><div class="exercise-name">Dinner</div></td><td class="reps">Protein + vegetables, lower carbs on rest days</td></tr>
+    </table>
+
+    <div class="tip-box" style="margin-top:16px"><strong>💡 #1 Rule</strong>Protein is everything. Hit 175–200g daily and you will build muscle even in a calorie deficit. Meal prep on Sundays — it's the most impactful habit for a working professional. Drink 3L+ of water daily.</div>
+  </div>
+
+</div>
+
+<script>
+function showTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+</script>
+</body>
+</html>
